@@ -9,6 +9,8 @@ on:
 jobs:
   versioning:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       new_version: ${{ steps.versioning.outputs.new_version }}
       version_changed: ${{ steps.versioning.outputs.version_changed }}
