@@ -1,1 +1,2 @@
 # deneme-sil
+minor1
