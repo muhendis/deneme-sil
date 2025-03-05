@@ -2,9 +2,9 @@ name: Python CI/CD with Docker, Semantic Versioning, and Slack Notifications
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   versioning:
