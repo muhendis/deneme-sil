@@ -1,0 +1,70 @@
+name: Python CI/CD with Docker, Semantic Versioning, and Slack Notifications
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  versioning:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.versioning.outputs.new_version }}
+      version_changed: ${{ steps.versioning.outputs.version_changed }}
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Fetch Tags
+      run: git fetch --tags
+
+    - name: Get Latest Version
+      id: get_version
+      run: |
+        latest_tag=$(git tag --sort=-v:refname | head -n 1)
+        if [[ -z "$latest_tag" ]]; then
+          latest_tag="v0.0.0"
+        fi
+        echo "latest_version=$latest_tag" >> $GITHUB_ENV
+
+    - name: Determine Next Version
+      id: versioning
+      run: |
+        latest_version=${{ env.latest_version }}
+        major=$(echo $latest_version | cut -d. -f1 | sed 's/v//')
+        minor=$(echo $latest_version | cut -d. -f2)
+        patch=$(echo $latest_version | cut -d. -f3)
+
+        commit_message=$(git log -1 --pretty=%B)
+
+        if [[ $commit_message == *"#major"* ]]; then
+          major=$((major + 1))
+          minor=0
+          patch=0
+          version_changed="true"
+        elif [[ $commit_message == *"#minor"* ]]; then
+          minor=$((minor + 1))
+          patch=0
+          version_changed="true"
+        elif [[ $commit_message == *"#patch"* ]]; then
+          patch=$((patch + 1))
+          version_changed="true"
+        else
+          new_version="$latest_version"
+          version_changed="false"
+        fi
+
+        new_version="v$major.$minor.$patch"
+        echo "New version: $new_version"
+        echo "version_changed=$version_changed" >> $GITHUB_ENV
+        echo "new_version=$new_version" >> $GITHUB_ENV
+        echo "::set-output name=version_changed::$version_changed"
+        echo "::set-output name=new_version::$new_version"
+
+    - name: Create Git Tag
+      if: steps.versioning.outputs.version_changed == 'true'
+      run: |
+        git tag ${{ env.new_version }}
+        git push origin ${{ env.new_version }}
