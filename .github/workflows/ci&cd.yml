@@ -41,16 +41,16 @@ jobs:
 
         commit_message=$(git log -1 --pretty=%B)
 
-        if [[ $commit_message == *"#major"* ]]; then
+        if [[ $commit_message == *"#major#"* ]]; then
           major=$((major + 1))
           minor=0
           patch=0
           version_changed="true"
-        elif [[ $commit_message == *"#minor"* ]]; then
+        elif [[ $commit_message == *"#minor#"* ]]; then
           minor=$((minor + 1))
           patch=0
           version_changed="true"
-        elif [[ $commit_message == *"#patch"* ]]; then
+        elif [[ $commit_message == *"#patch#"* ]]; then
           patch=$((patch + 1))
           version_changed="true"
         else
